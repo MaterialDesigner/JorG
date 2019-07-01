@@ -1,3 +1,6 @@
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e44b6e4365bb41f38054cf9800f95021)](https://app.codacy.com/app/apkadzielawa/JorG?utm_source=github.com&utm_medium=referral&utm_content=Mellechowicz/JorG&utm_campaign=Badge_Grade_Dashboard)
+
 <p align="center"><img src="doc/JorG.png"></p>
 <p>JorGπ (<em>Georgie Pie</em>) is an automatic scheme of mapping an ab-initio system (so far using VASP) onto Heisenberg model:</p>
 <p align="center"><img src="doc/Heisenberg.png" height="48px"></p>
