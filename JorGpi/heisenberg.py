@@ -42,7 +42,9 @@ class EquationSolver:
                 print(self.vector)
 
     def remove_tautologies(self):
-        # removing 0 = 0 equations !
+        """
+           method removing tautologies,
+           i.e., 0 = 0 equations """
         scale       = np.average(np.abs(self.equations))
         tautologies = np.argwhere(
                         np.apply_along_axis(
@@ -64,9 +66,9 @@ class EquationSolver:
         return False
 
     def remove_linears(self):
-        # Based on https://stackoverflow.com/questions/
-        #                  28816627/how-to-find-linearly-independent-rows-from-a-matrix
-        # We remove lineary dependent rows
+        """ Based on https://stackoverflow.com/questions/
+                          28816627/how-to-find-linearly-independent-rows-from-a-matrix
+            We remove lineary dependent rows """
         remover=set([])
         for i,j in product(range(self.equations.shape[0]),repeat=2):
             if i in remover:
@@ -209,7 +211,34 @@ class NaiveHeisenberg:
             self.kernel        = HeisenbergKernel(len(flipper)*mul,magnetic_moments)
         return mul
 
-    def generate(self,mask,flipper,magnetic_moments=None):
+    def generate(self,mask,flipper,magnetic_moments=None,ansatz='simple'):
+        print(ansatz)
+        if   ansatz[0] == 's' or ansatz[0] == 'S':
+            return self.generate_simple(mask,flipper,magnetic_moments)
+        else:
+            return self.generate_corrected(mask,flipper,magnetic_moments)
+
+    def generate_simple(self,mask,flipper,magnetic_moments=None):
+        mul = self.initialize(mask,flipper,magnetic_moments)
+        for (row,config),(idx_one,atom_one),atom_two\
+                in product(enumerate(self.flippings),enumerate(self.crystal),self.crystal8):
+            distance,offset = self.check_if_contributes(atom_one,atom_two)
+            if not distance or distance < 1e-2:
+                continue
+            j = np.argwhere(np.abs(self.flipper - distance)<1e-2)
+            if not j.size:
+                continue
+            column = mul*j[0][0]+offset
+            self.systemOfEquations[row][column] +=\
+                    self.kernel.add_interaction(( -1,column),(idx_one,atom_two[3]))
+            self.systemOfEquations[row][column] -=\
+                    self.kernel.add_interaction((row,column),(idx_one,atom_two[3]))
+            self.kernel.add_name(column,
+                    HeisenbergKernel.name_interaction(atom_one[0],atom_two[0],distance))
+        self.remove_empty_columns()
+        return self.systemOfEquations
+
+    def generate_corrected(self,mask,flipper,magnetic_moments=None):
         mul = self.initialize(mask,flipper,magnetic_moments)
         for (row,config),(idx_one,atom_one),atom_two\
                 in product(enumerate(self.flippings),enumerate(self.crystal),self.crystal8):

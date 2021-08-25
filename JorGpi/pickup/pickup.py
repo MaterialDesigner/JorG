@@ -31,7 +31,8 @@ class EnergyConverter:
 
     @staticmethod
     def convert(*args,**kwargs):
-        # Returns array of J values with different conventions (see types)
+        """
+            Returns array of J values with different conventions (see types) """
         settings = EnergyConverter.default
         settings.update(kwargs)
         data = np.array([np.copy(args),np.copy(args)])*EnergyConverter.energyRatios[kwargs['units']]
