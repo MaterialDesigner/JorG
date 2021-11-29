@@ -33,7 +33,7 @@ struct System{
 };
     
 template<typename VectorType>
-std::vector<std::tuple<unsigned,unsigned,double>> get_interactions(System<VectorType>& system, double decayCoeff, size_t interactionModel=0U){
+std::vector<std::tuple<unsigned,unsigned,double>> get_interactions(System<VectorType>& system, double decayCoeff, size_t interactionModel=1U){
 #ifdef _VERBOSE
 	switch(interactionModel){
 	  case 0U:
@@ -49,32 +49,30 @@ std::vector<std::tuple<unsigned,unsigned,double>> get_interactions(System<Vector
 	}
 #endif
     std::vector<std::tuple<unsigned,unsigned,double>> d;
+    int i, j, k;
+    double J = 0.0;
+    VectorType image;
     for (const auto& atom1 : system.flippable) {
         for (const auto& atom2 : system.supercell) {
-            if(std::fabs(std::get<2>(atom2)) > 1e-9 && std::get<0>(atom1) != std::get<0>(atom2)) 
-            	switch(interactionModel){
-		  case 0:
-               	    d.push_back(std::make_tuple(std::get<0>(atom1),
-                   	                        std::get<0>(atom2),
-                           	               -exp(decayCoeff*VectorType::norm(
-                                   	            std::get<1>(atom1) - std::get<1>(atom2) ))));
-		    break;
-		  case 1:
-               	    d.push_back(std::make_tuple(std::get<0>(atom1),
-                   	                        std::get<0>(atom2),
-                                               -pow(VectorType::norm(
-                                                std::get<1>(atom1) - std::get<1>(atom2) ),-decayCoeff)));
-		    break;
-		  case 2:
-               	    d.push_back(std::make_tuple(std::get<0>(atom1),
-                   	                        std::get<0>(atom2),
-                                               -sin(decayCoeff*VectorType::norm(
-                                                      std::get<1>(atom1) - std::get<1>(atom2) ))/
-                                                   (decayCoeff*VectorType::norm(
-                                                      std::get<1>(atom1) - std::get<1>(atom2) ))));
-		    break;
-		  default: exit(-1); break;
-		}
+            J = 0.0;
+            for (i = -1; i < 2; ++i) for (j = -1; j < 2; ++j) for (k = -1; k < 2; ++k) {
+                image = i*system.basis[0] + j*system.basis[1] + k*system.basis[2];
+                if (std::fabs(std::get<2>(atom2)) > 1e-9 && std::get<0>(atom1) != std::get<0>(atom2))
+                    switch (interactionModel) {
+                        case 0:
+                            J += -exp(-decayCoeff*VectorType::norm(std::get<1>(atom1)-std::get<1>(atom2)-image));
+                            break;
+                        case 1:
+                            J += -pow(VectorType::norm(std::get<1>(atom1)-std::get<1>(atom2)-image),-decayCoeff);
+                            break;
+                        case 2:
+                            J += -sin(-decayCoeff*VectorType::norm(std::get<1>(atom1)-std::get<1>(atom2)-image))
+                                      /decayCoeff*VectorType::norm(std::get<1>(atom1)-std::get<1>(atom2)-image);
+                            break;
+                        default: exit(-1); break;
+                    }
+            }
+            d.push_back(std::make_tuple(std::get<0>(atom1), std::get<0>(atom2), J));
         }
     }
     return d;

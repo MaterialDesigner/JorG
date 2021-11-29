@@ -21,7 +21,7 @@ executables_jorgpi = ['JorGpi/bin/JorGpi-demagnetize',
 
 requirements_jorgpi = []
 
-VERSION='0.2.0'
+VERSION='0.2.1'#.heisenberg'
 
 if __name__ == '__main__':
     try:

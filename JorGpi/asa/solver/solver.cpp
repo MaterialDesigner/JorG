@@ -71,7 +71,7 @@ constexpr size_t SITESNUMBER = _SITESNUMBER;
     size_t iteration = 0U;
     for(auto n = 4.0; n<1024.0; n*=2){
         model.reset();
-        auto d = aux::get_interactions(system,-n*decayCoeff,ansatz);
+        auto d = aux::get_interactions(system,n*decayCoeff,ansatz);
         model.add_interaction(d);
 
 #ifdef _VERBOSE    

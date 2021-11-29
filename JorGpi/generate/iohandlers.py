@@ -229,8 +229,12 @@ class Msg:
     @staticmethod
     def print_solver_status(configs):
         if configs > 1e6:
-            print_label("Checking total number of configurations: %.2e"%float(configs),
-                            labelStyle=Color.bold+Color.darkred)
+            try:
+                print_label("Checking total number of configurations: %.2e"%float(configs),
+                                labelStyle=Color.bold+Color.darkred)
+            except OverflowError:
+                print_label("Checking total number of configurations: incomprehensible",
+                                labelStyle=Color.bold+Color.darkred)
         else:
             print_label("Checking total number of configurations: %d"%configs,
                             labelStyle=Color.bold+Color.darkred)

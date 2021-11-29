@@ -1,5 +1,5 @@
 <p align="center"><img src="doc/JorG.png"></p>
-<p>JorGπ (<em>Georgie Pie</em>) is an automatic scheme of mapping an ab-initio system (so far using VASP) onto Heisenberg model.</p>
+<p>JorGπ (<em>Georgie Pie</em>) is an automatic scheme of mapping an ab-initio system (so far using VASP) onto the Heisenberg model.</p>
 
 # Workflow
 1. Find a ground state of your magnetic structure.
@@ -16,7 +16,7 @@
 1. Run ```JorGpi-pickup```
     * You can check the options using ```JorGpi-pickup --help```.
     * We suggest to check the *flipped* states for convergence.
-    * The solver either solves the system of equations (if a minimal set of excided states is provided) or finds an optimal fit to the model using the least-squares method (thus the more results may cancel the numerical error).
+    * The solver either solves the system of equations (if a minimal set of excided states is provided) or finds an optimal fit to the model using the least-squares method (thus canceling out the numerical error).
 
 <p align="center"><img src="doc/Heisenberg.png" height="48px"></p>
 <p align="center"><img src="doc/Jdef.png" height="24px"></p>
