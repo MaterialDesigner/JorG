@@ -285,7 +285,7 @@ def apply_mirrors_xyz(dimensions,cell):
     # number of copies in each direction so one can 
     reflections    = []
     for d in displacements:
-        maxInt = 4+int(d - 1e-15) # to avoid d=1
+        maxInt = 2+int(d - 1e-15) # to avoid d=1
         reflections.append([i for i in range(-maxInt,maxInt+1)])
 
     outputCell = []
