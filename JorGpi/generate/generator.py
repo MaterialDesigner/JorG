@@ -9,6 +9,7 @@ from JorGpi.aux.Masks         import maskFull
 
 class Errors:
     left_handed_basis = 3
+    wyckoff_number_not_found = 4
 
 def get_number_of_pictures(directions,cutOff,referenceAtom):
     """
@@ -92,11 +93,9 @@ class CrystalGenerator:
                 break
         return (crystal,newReference)
 
-#
-#
-#
-#
-#
+class Identity(dict):
+    def __missing__(self,key):
+        return key
 
 def wyckoffs_dict(originalCell, neotericCell):
     """
@@ -109,7 +108,7 @@ def wyckoffs_dict(originalCell, neotericCell):
                                           """
     originalSymmetry = spglib.get_symmetry_dataset(originalCell)
     neotericSymmetry = spglib.get_symmetry_dataset(neotericCell)
-    wyckoffPositionDict = {}
+    wyckoffPositionDict = Identity()
     for (i,neotericAtom),\
         (j,originalAtom) \
           in product(enumerate(neotericCell[1]),
@@ -165,10 +164,19 @@ class NearestNeighborsGenerator:
         self.distances = []
         for atom,wyck in zip(self.crystal,symmetry['wyckoffs']):
             distance = np.around(np.linalg.norm(atom[1]-self.newReferenceAtom[1]),2)
-            if   distance                   not in self.distances\
-             and self.wyckoffPositionDict[wyck] in self.Wyckoffs\
-             and "$%s$"%atom[0]                 in self.atomTypeMask:
-                self.distances.append(distance)
+            try:
+                if   distance                   not in self.distances\
+                 and self.wyckoffPositionDict[wyck] in self.Wyckoffs\
+                 and "$%s$"%atom[0]                 in self.atomTypeMask:
+                    self.distances.append(distance)
+            except KeyError:
+                print("Error in the Wyckoff position dic")
+                for key in self.wyckoffPositionDict:
+                    print(key,":",self.wyckoffPositionDict[key])
+                print("------------------------------------------")
+                print(self.wyckoffPositionDict)
+                print("@ key:",wyck," self.wyckoffPositionDict[",wyck,"] not in",self.Wyckoffs)
+                exit(Errors.wyckoff_number_not_found)
         self.distances.sort()
         if np.ma.masked_greater(self.distances,self.cutOff).count() <= self.nearestNeighbor:
             return False
