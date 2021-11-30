@@ -86,12 +86,21 @@ constexpr size_t SITESNUMBER = _SITESNUMBER;
 	    if(x.count() > upperlimit) continue;
 	    if(x.count() > 0.5*mask.count()) x.flip();
 
+	    auto isUnique = solutions.insert(x);
+
+        if(isUnique.second){
 #ifndef _QUIET
-        std::cout<<"("<<iteration<<")\t"<<n*decayCoeff<<"\t";
-        aux::print_state(x,reference,mask);
+          std::cout<<"("<<iteration<<")\t"<<n*decayCoeff<<"\t";
+          aux::print_state(x,reference,mask);
 #endif
-	    solutions.insert(x);
-        ++iteration;
+          ++iteration;
+        }
+        else {
+#ifndef _QUIET
+          std::cout<<"-------------------------------------------------------------"<<std::endl;
+          aux::print_state(x,reference,mask);
+#endif
+        }
 	    if(solutions.size() >= unique_flips) break;
         }
     if(solutions.size() >= unique_flips) break;
