@@ -254,8 +254,8 @@ class NaiveHeisenberg:
             - (self.numberOfElements-offsetA)*(self.numberOfElements-offsetA -1)//2 + offsetB
 
     def check_if_contributes(self,atomI,atomJ):
-        if (atomI[0] not in self.mask
-        or  atomJ[0] not in self.mask):
+        if ("$"+atomI[0]+"$" not in self.mask
+        or  "$"+atomJ[0]+"$" not in self.mask):
             return False,None
         offsetI = self.offset_from_mask(atomI[0])
         offsetJ = self.offset_from_mask(atomJ[0])
