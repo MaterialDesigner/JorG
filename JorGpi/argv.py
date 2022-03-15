@@ -11,8 +11,7 @@ class Options:
     keys = ["cutOff", "neighbor", "Wyckoffs", "reference",
             "input", "incar", "output", "mask", "symmetry",
             "refined", "minimal_set", "extra_dimentions", 
-            "buffer_cases", "carthesian_output", "interactionAnsatz",
-            "nmpi", "mpicompiler"]
+            "buffer_cases", "carthesian_output", "interactionAnsatz" ]
 
     def __init__(self, *args):
         self.parser = ap.ArgumentParser(description='Find minimal number of unique spin-flips')
@@ -85,13 +84,6 @@ class Options:
              help='symmetry run only (default False)')
         self.parser.add_argument('--refined',  action='store_true',
              help='should use refined supercell (default False)')
-        self.parser.add_argument('--nmpi', default=0, type=int,
-             help='enable the Ising model solver to run in parallel using\
-                   the given number of MPI processes')
-        self.parser.add_argument('--mpicompiler', default=None,
-             help='MPI compiler to use if nmpi > 0.  Supported compilers:\
-                   mpicxx, mpiCC, mpic++. By default, set to the MPI compiler\
-                   saved in the CC or CXX environment variable, or to mpicxx')
 
     def generate_separate(self):
         output=''

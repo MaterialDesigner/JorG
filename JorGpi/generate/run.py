@@ -16,7 +16,6 @@ from JorGpi.generate.iohandlers import StreamHandler,JmolVisualization
 from JorGpi.generate.iohandlers import TemporaryFiles,Msg
 from JorGpi.generate.iohandlers import VariableFixer,Symmetry,read_flips
 from JorGpi.generate.crun import Crun
-from JorGpi.generate.mpirun import Mpirun
 
 class JorGpi:
     def __init__(self,*args):
@@ -28,8 +27,6 @@ class JorGpi:
         self.bufferCases       = self.currentOptions('buffer_cases')
         self.extraMultiplier   = self.currentOptions('extra_dimentions')
         self.interactionAnsatz = self.currentOptions('ansatz')
-        self.nmpi              = self.currentOptions('nmpi')
-        self.mpicompiler       = self.currentOptions('mpicompiler')
 
         self.handler    = StreamHandler(self.outDirName)
         self.outDirName = self.handler()
@@ -174,7 +171,9 @@ class JorGpi:
                                         center=self.crystal[self.newReference][1])
 
     class AdaptiveSimulatedAnnealing:
-        options = {'extra_compile_args': ['-std=c++17','-O3', '-fopenmp'],
+        options = {'extra_compile_args': ['-std=c++17','-O3',
+                                          '-Wall','-Wextra',
+                                          '-pedantic','-fopenmp'],
                    'extra_link_args'   : ['-std=c++17','-lm',
                                           '-lgsl','-lgslcblas',
                                           '-fopenmp']}
@@ -182,28 +181,13 @@ class JorGpi:
         def __init__(self,JorGpiObject,**kwargs):
             self.solverDirectory = environ['JORGPI_ASA_SRC']+'/asa/solver'
             self.options['define_macros'] = [('_SITESNUMBER', str(len(JorGpiObject.crystal)))]
-
             if 'verbose' in kwargs:
                 self.options['define_macros'].append(('_%s'%kwargs['verbose'].upper(), 0))
-
-            if JorGpiObject.nmpi > 0:
-                self.options['define_macros'].append(('_MPI', 1))
-                self.options['nmpi'] = JorGpiObject.nmpi
-                self.options['mpicompiler'] = JorGpiObject.mpicompiler
-                
-                self.builder = Mpirun(environ['JORGPI_ASA_SRC']+'/asa/asa.cpp',
-                                      environ['JORGPI_ASA_SRC']+'/asa/ising.cpp',
-                                      environ['JORGPI_ASA_SRC']+'/asa/solver/solver.cpp',
-                                      environ['JORGPI_ASA_SRC']+'/asa/solver/aux.cpp',
-                                      environ['JORGPI_ASA_SRC']+'/asa/solver/main.cpp',
-                                      **self.options)
-            else:
-                self.builder = Crun(environ['JORGPI_ASA_SRC']+'/asa/asa.cpp',
-                                    environ['JORGPI_ASA_SRC']+'/asa/ising.cpp',
-                                    environ['JORGPI_ASA_SRC']+'/asa/solver/solver.cpp',
-                                    environ['JORGPI_ASA_SRC']+'/asa/solver/aux.cpp',
-                                    **self.options)
-
+            self.builder = Crun(environ['JORGPI_ASA_SRC']+'/asa/asa.cpp',
+                                environ['JORGPI_ASA_SRC']+'/asa/ising.cpp',
+                                environ['JORGPI_ASA_SRC']+'/asa/solver/solver.cpp',
+                                environ['JORGPI_ASA_SRC']+'/asa/solver/aux.cpp',
+                                **self.options)
             self.tmpFiles = TemporaryFiles()
             self.tmpFiles.write_input(JorGpiObject.allFlippable,JorGpiObject.crystal)
             self.tmpFiles.write_supercell(JorGpiObject.crystal)
@@ -211,12 +195,10 @@ class JorGpi:
             Msg.print_solver_status(int(2**len(JorGpiObject.allFlippable)))
 
         def __call__(self,jorgpiobject):
-            args = [] if jorgpiobject.nmpi > 0 else ['solver']
-            args.extend([*self.tmpFiles.get_files(),
+            self.builder('solver',*self.tmpFiles.get_files(),
                          jorgpiobject.newReference,
                          2*jorgpiobject.nearestNeighbor+jorgpiobject.bufferCases,
-			             jorgpiobject.interactionAnsatz])
-            self.builder(*args)
+			 jorgpiobject.interactionAnsatz)
 
         def __del__(self):
             print_label("Found %d unique configurations"%len(np.loadtxt('best.flips',bool)),
